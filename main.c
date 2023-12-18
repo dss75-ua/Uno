@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include <string.h>
 
 #define DECK_SIZE 108
 #define HAND_SIZE 7
@@ -25,38 +24,26 @@ typedef struct {
 Card deck[DECK_SIZE];
 int deckIndex = 0;
 
-void initializeDeck();
-void shuffleDeck();
-Card drawCard();
-void printCard(Card card);
-void printHand(Player player);
-void initializePlayers(Player players[2]);
-void switchPlayer(Player** currentPlayer, Player players[2]);
-void playGame(Player players[2]);
-int isValidMove(Card topCard, Card playedCard);
-void drawCardFromDeck(Player* player, int numCards);
-void printMenu(Card topCard, Player currentPlayer);
-void endOfGameMenu(int* playAgain);
-
-int main() {
-    srand(time(NULL));
-    Player players[2];
-    initializePlayers(players);
-    playGame(players);
-    return 0;
+void copyString(char dest[], const char src[]) {
+    int i = 0;
+    while (src[i] != '\0' && i < MAX_NAME_LENGTH - 1) {
+        dest[i] = src[i];
+        i++;
+    }
+    dest[i] = '\0';
 }
 
 void initializeDeck() {
     int i, j, index = 0;
-    for (i = 0; i < 4; ++i) {
-        for (j = 0; j < 10; ++j) {
+    for (i = 0; i < 4; i++) {
+        for (j = 0; j < 10; j++) {
             deck[index].color = i;
             deck[index].value = j;
-            ++index;
+            index++;
             if (j != 0) {
                 deck[index].color = i;
                 deck[index].value = j;
-                ++index;
+                index++;
             }
         }
     }
@@ -65,7 +52,7 @@ void initializeDeck() {
 void shuffleDeck() {
     int i, j;
     Card temp;
-    for (i = DECK_SIZE - 1; i > 0; --i) {
+    for (i = DECK_SIZE - 1; i > 0; i--) {
         j = rand() % (i + 1);
         temp = deck[i];
         deck[i] = deck[j];
@@ -86,23 +73,27 @@ void printCard(Card card) {
 
 void initializePlayers(Player players[2]) {
     // Asignar nombres genéricos a los jugadores
-    strcpy(players[0].name, "Jugador 1");
-    strcpy(players[1].name, "Jugador 2");
+    copyString(players[0].name, "Jugador 1");
+    copyString(players[1].name, "Jugador 2");
 
     initializeDeck();
     shuffleDeck();
 
     int i, j;
-    for (i = 0; i < 2; ++i) {
+    for (i = 0; i < 2; i++) {
         players[i].handSize = HAND_SIZE;
-        for (j = 0; j < HAND_SIZE; ++j) {
+        for (j = 0; j < HAND_SIZE; j++) {
             players[i].hand[j] = drawCard();
         }
     }
 }
 
-void switchPlayer(Player** currentPlayer, Player players[2]) {
-    *currentPlayer = (*currentPlayer == &players[0]) ? &players[1] : &players[0];
+void switchPlayer(Player* currentPlayer, Player players[2]) {
+    if (currentPlayer == &players[0]) {
+        currentPlayer = &players[1];
+    } else {
+        currentPlayer = &players[0];
+    }
 }
 
 int isValidMove(Card topCard, Card playedCard) {
@@ -111,7 +102,7 @@ int isValidMove(Card topCard, Card playedCard) {
 
 void drawCardFromDeck(Player* player, int numCards) {
     int i;
-    for (i = 0; i < numCards; ++i) {
+    for (i = 0; i < numCards; i++) {
         if (deckIndex < DECK_SIZE && player->handSize < HAND_SIZE) {
             // Solo dibujar si quedan cartas en el mazo y la mano no está llena
             player->hand[player->handSize++] = drawCard();
@@ -127,7 +118,7 @@ void drawCardFromDeck(Player* player, int numCards) {
 
 void printHand(Player player) {
     printf("Mano de %s:\n", player.name);
-    for (int i = 0; i < player.handSize; ++i) {
+    for (int i = 0; i < player.handSize; i++) {
         printf("[%d] ", i + 1);
         printCard(player.hand[i]);
         printf("\n");
@@ -149,7 +140,7 @@ void printMenu(Card topCard, Player currentPlayer) {
 
 void endOfGameMenu(int* playAgain) {
     printf("\n******************************************************\n");
-    printf("                           JUEGO DE CARTAS UNO\n");
+    printf("                   JUEGO DE CARTAS UNO               \n");
     printf("******************************************************\n");
     printf("\n1. Jugar otra vez\n");
     printf("2. Salir\n\n");
@@ -172,8 +163,6 @@ void playGame(Player players[2]) {
     srand(time(NULL));
     Player* currentPlayer = &players[0];
     Card topCard = drawCard(); // Dibujar la primera carta para comenzar el juego
-
-    printf("¡Vamos a jugar UNO!\n");
 
     while (1) {
         printMenu(topCard, *currentPlayer);
@@ -227,7 +216,15 @@ void playGame(Player players[2]) {
         }
 
         if (currentPlayer->handSize > 0) {
-            switchPlayer(&currentPlayer, players);
+            switchPlayer(currentPlayer, players);
         }
     }
+}
+
+int main() {
+    srand(time(NULL));
+    Player players[2];
+    initializePlayers(players);
+    playGame(players);
+    return 0;
 }
