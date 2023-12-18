@@ -8,7 +8,7 @@
 #define MAX_NAME_LENGTH 20
 
 typedef enum {
-    RED, GREEN, BLUE, YELLOW
+    ROJO, VERDE, AZUL, AMARILLO
 } Color;
 
 typedef struct {
@@ -35,6 +35,8 @@ void switchPlayer(Player** currentPlayer, Player players[2]);
 void playGame(Player players[2]);
 int isValidMove(Card topCard, Card playedCard);
 void drawCardFromDeck(Player* player, int numCards);
+void printMenu(Card topCard, Player currentPlayer);
+void endOfGameMenu(int* playAgain);
 
 int main() {
     srand(time(NULL));
@@ -76,16 +78,16 @@ Card drawCard() {
 }
 
 void printCard(Card card) {
-    const char* colors[] = {"Red", "Green", "Blue", "Yellow"};
+    const char* colors[] = {"Rojo", "Verde", "Azul", "Amarillo"};
     const char* values[] = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
 
     printf("%s %s", colors[card.color], values[card.value]);
 }
 
 void initializePlayers(Player players[2]) {
-    // Assign generic player names
-    strcpy(players[0].name, "Player 1");
-    strcpy(players[1].name, "Player 2");
+    // Asignar nombres genéricos a los jugadores
+    strcpy(players[0].name, "Jugador 1");
+    strcpy(players[1].name, "Jugador 2");
 
     initializeDeck();
     shuffleDeck();
@@ -111,20 +113,20 @@ void drawCardFromDeck(Player* player, int numCards) {
     int i;
     for (i = 0; i < numCards; ++i) {
         if (deckIndex < DECK_SIZE && player->handSize < HAND_SIZE) {
-            // Only draw if there are cards remaining in the deck and the hand is not full
+            // Solo dibujar si quedan cartas en el mazo y la mano no está llena
             player->hand[player->handSize++] = drawCard();
         } else if (deckIndex >= DECK_SIZE) {
-            printf("Out of cards to draw!\n");
+            printf("¡Se acabaron las cartas para robar!\n");
             break;
         } else {
-            printf("Cannot draw more cards, hand is full.\n");
+            printf("No se pueden dibujar más cartas, la mano está llena.\n");
             break;
         }
     }
 }
 
 void printHand(Player player) {
-    printf("%s's Hand:\n", player.name);
+    printf("Mano de %s:\n", player.name);
     for (int i = 0; i < player.handSize; ++i) {
         printf("[%d] ", i + 1);
         printCard(player.hand[i]);
@@ -151,7 +153,7 @@ void endOfGameMenu(int* playAgain) {
     printf("******************************************************\n");
     printf("\n1. Jugar otra vez\n");
     printf("2. Salir\n\n");
-    printf("Ingresa el numero de tu eleccion: ");
+    printf("Ingresa el número de tu elección: ");
 
     int choice;
     scanf("%d", &choice);
@@ -161,7 +163,7 @@ void endOfGameMenu(int* playAgain) {
     } else if (choice == 2) {
         *playAgain = 0;
     } else {
-        printf("Opcion invalida. Saliendo del juego.\n");
+        printf("Opción inválida. Saliendo del juego.\n");
         *playAgain = 0;
     }
 }
@@ -169,44 +171,44 @@ void endOfGameMenu(int* playAgain) {
 void playGame(Player players[2]) {
     srand(time(NULL));
     Player* currentPlayer = &players[0];
-    Card topCard = drawCard(); // Draw the first card to start the game
+    Card topCard = drawCard(); // Dibujar la primera carta para comenzar el juego
 
-    printf("Let's play UNO!\n");
+    printf("¡Vamos a jugar UNO!\n");
 
     while (1) {
         printMenu(topCard, *currentPlayer);
 
         if (currentPlayer->handSize == 0) {
-            printf("%s wins!\n", currentPlayer->name);
+            printf("¡%s gana!\n", currentPlayer->name);
         }
 
         if (deckIndex >= DECK_SIZE) {
-            printf("Out of cards to draw!\n");
+            printf("¡Se acabaron las cartas para robar!\n");
         }
 
         if (currentPlayer->handSize == 0 || deckIndex >= DECK_SIZE) {
-            // End of game menu
+            // Menú de fin de juego
             int playAgain;
             endOfGameMenu(&playAgain);
 
             if (playAgain) {
-                // Reset the game for a new round
+                // Reiniciar el juego para una nueva ronda
                 initializeDeck();
                 shuffleDeck();
                 initializePlayers(players);
                 currentPlayer = &players[0];
                 topCard = drawCard();
-                printf("Let's play UNO!\n");
+                printf("¡Vamos a jugar UNO!\n");
             } else {
-                // Exit the game
+                // Salir del juego
                 break;
             }
         }
 
-        printf("Enter the card number to play (or 0 to draw a card): ");
+        printf("Ingresa el número de la carta para jugar (o 0 para robar una carta): ");
         int choice;
         scanf("%d", &choice);
-        getchar(); // Consume newline character
+        getchar(); // Consumir el carácter de nueva línea
 
         if (choice == 0) {
             drawCardFromDeck(currentPlayer, 1);
@@ -214,13 +216,13 @@ void playGame(Player players[2]) {
             Card playedCard = currentPlayer->hand[choice - 1];
             if (isValidMove(topCard, playedCard)) {
                 topCard = playedCard;
-                currentPlayer->hand[choice - 1] = currentPlayer->hand[--currentPlayer->handSize]; // Remove played card from hand
+                currentPlayer->hand[choice - 1] = currentPlayer->hand[--currentPlayer->handSize]; // Quitar la carta jugada de la mano
             } else {
-                printf("Invalid move! Try again.\n");
+                printf("¡Movimiento inválido! Inténtalo de nuevo.\n");
                 continue;
             }
         } else {
-            printf("Invalid choice! Try again.\n");
+            printf("¡Elección inválida! Inténtalo de nuevo.\n");
             continue;
         }
 
