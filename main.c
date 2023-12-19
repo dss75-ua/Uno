@@ -104,16 +104,22 @@ int isValidMove(Card topCard, Card playedCard) {
     return (playedCard.color == topCard.color) || (playedCard.value == topCard.value);
 }
 
+// Función para robar una carta del mazo
 Card drawCardFromDeck(Player* player, int displayCard) {
+    // Comprueba si el tamaño de la mano del jugador ha alcanzado el máximo
     if ((*player).handSize >= MAX_CARDS) {
+        // Si es así, muestra un mensaje y devuelve una carta aleatoria
         printf("\n¡La mano está llena! No puedes robar más cartas.\n");
         return getRandomCard();
     }
 
+    // Si displayCard es verdadero, muestra un mensaje indicando que se ha robado una carta
     if (displayCard) {
         printf("\n¡Se ha robado una carta adicional: ");
     }
+    // Obtiene una carta aleatoria
     Card newCard = getRandomCard();
+    // Si displayCard es verdadero, muestra el color y el valor de la nueva carta
     if (displayCard) {
         switch (newCard.color) {
             case ROJO:
@@ -133,8 +139,10 @@ Card drawCardFromDeck(Player* player, int displayCard) {
         printf("!\n");
     }
 
+    // Añade la nueva carta a la mano del jugador e incrementa el tamaño de la mano
     (*player).hand[(*player).handSize++] = newCard;
 
+    // Devuelve la nueva carta
     return newCard;
 }
 
@@ -261,10 +269,13 @@ void playGame(Player players[2]) {
     }
 }
 
+// Función para jugar contra la computadora
 void playAgainstComputer(Player players[2]) {
+    // Asigna los nombres a los jugadores
     copyString(players[0].name, "Jugador 1");
     copyString(players[1].name, "Computadora");
 
+    // Inicializa las manos de los jugadores con cartas aleatorias
     int i;
     for (i = 0; i < 2; i++) {
         players[i].handSize = HAND_SIZE;
@@ -273,18 +284,27 @@ void playAgainstComputer(Player players[2]) {
         }
     }
 
+    // Establece el jugador actual
     int currentPlayer = 0;
+    // Inicializa la pila de cartas
     CardPile cardPile;
     cardPile.top = -1;
+    // Roba la carta inicial
     Card initialCard = drawInitialCard();
+    // Coloca la carta inicial en la pila de cartas
     cardPile.cards[++cardPile.top] = initialCard;
+    // Establece la última carta jugada como la carta inicial
     Card lastPlayedCard = initialCard;
 
+    // Comienza el juego
     while (1) {
+        // Si el jugador actual es la computadora
         if (customStringCompare(players[currentPlayer].name, "Computadora") == 0) {
             int played = 0;
+            // La computadora intenta jugar una carta válida de su mano
             for (i = 0; i < players[currentPlayer].handSize; i++) {
                 if (isValidMove(lastPlayedCard, players[currentPlayer].hand[i])) {
+                    // Si encuentra una, la juega y la coloca en la pila de cartas
                     printf("\nComputadora juega la carta: ");
                     printCard(players[currentPlayer].hand[i]);
                     printf("\n");
@@ -292,6 +312,7 @@ void playAgainstComputer(Player players[2]) {
                     cardPile.cards[++cardPile.top] = players[currentPlayer].hand[i];
                     lastPlayedCard = players[currentPlayer].hand[i];
 
+                    // Elimina la carta jugada de la mano de la computadora
                     players[currentPlayer].handSize--;
                     int j;
                     for (j = i; j < players[currentPlayer].handSize; j++) {
@@ -303,40 +324,49 @@ void playAgainstComputer(Player players[2]) {
                 }
             }
 
+            // Si la computadora no pudo jugar una carta, roba una
             if (!played) {
                 printf("\nComputadora roba una carta.\n");
                 drawCardFromDeck(&players[currentPlayer], 0);
             }
         } else {
+            // Si el jugador actual es el usuario
             printMenu(players[currentPlayer], &cardPile, initialCard, lastPlayedCard);
 
+            // Solicita al usuario que elija una carta para jugar
             printf("Ingresa el número de la carta para jugar (o 0 para robar una carta): ");
             int choice;
             scanf("%d", &choice);
             getchar();
 
+            // Si el usuario elige robar una carta
             if (choice == 0) {
                 Card drawnCard = drawCardFromDeck(&players[currentPlayer], 1);
             } else if (choice >= 1 && choice <= players[currentPlayer].handSize) {
+                // Si el usuario elige jugar una carta
                 Card playedCard = players[currentPlayer].hand[choice - 1];
                 printf("%s juega la carta: ", players[currentPlayer].name);
                 printCard(playedCard);
                 printf("\n");
 
+                // Coloca la carta jugada en la pila de cartas
                 cardPile.cards[++cardPile.top] = playedCard;
                 lastPlayedCard = playedCard;
 
+                // Elimina la carta jugada de la mano del usuario
                 players[currentPlayer].handSize--;
                 int i;
                 for (i = choice - 1; i < players[currentPlayer].handSize; i++) {
                     players[currentPlayer].hand[i] = players[currentPlayer].hand[i + 1];
                 }
             } else {
+                // Si el usuario elige una opción inválida
                 printf("¡Elección inválida! Inténtalo de nuevo.\n");
                 continue;
             }
         }
 
+        // Si un jugador se queda sin cartas, gana el juego
         if (players[currentPlayer].handSize == 0) {
             if (customStringCompare(players[currentPlayer].name, "Computadora") == 0) {
                 printf("\n¡La computadora gana!\n");
@@ -346,6 +376,7 @@ void playAgainstComputer(Player players[2]) {
             break;
         }
 
+        // Cambia el turno al otro jugador
         switchPlayer(&currentPlayer, 2);
     }
 }
