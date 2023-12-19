@@ -103,35 +103,39 @@ int isValidMove(Card topCard, Card playedCard) {
     // Comprueba si el movimiento es válido
     return (playedCard.color == topCard.color) || (playedCard.value == topCard.value);
 }
-Card drawCardFromDeck(Player* player) {
-    // Roba una carta del mazo
+
+Card drawCardFromDeck(Player* player, int displayCard) {
     if ((*player).handSize >= MAX_CARDS) {
-        printf("¡La mano está llena! No puedes robar más cartas.\n");
-        return getRandomCard(); // Devuelve una carta aleatoria si la mano está llena
+        printf("\n¡La mano está llena! No puedes robar más cartas.\n");
+        return getRandomCard();
     }
 
-    printf("¡Se ha robado una carta adicional: ");
-    Card newCard = getRandomCard(); // Obtiene una carta aleatoria
-    switch (newCard.color) {
-        case ROJO:
-            printf("\033[31mRojo\033[0m");
-            break;
-        case VERDE:
-            printf("\033[32mVerde\033[0m");
-            break;
-        case AZUL:
-            printf("\033[34mAzul\033[0m");
-            break;
-        case AMARILLO:
-            printf("\033[33mAmarillo\033[0m");
-            break;
+    if (displayCard) {
+        printf("\n¡Se ha robado una carta adicional: ");
     }
-    printf(" %d", newCard.value);
-    printf("!\n");
+    Card newCard = getRandomCard();
+    if (displayCard) {
+        switch (newCard.color) {
+            case ROJO:
+                printf("\033[31mRojo\033[0m");
+                break;
+            case VERDE:
+                printf("\033[32mVerde\033[0m");
+                break;
+            case AZUL:
+                printf("\033[34mAzul\033[0m");
+                break;
+            case AMARILLO:
+                printf("\033[33mAmarillo\033[0m");
+                break;
+        }
+        printf(" %d", newCard.value);
+        printf("!\n");
+    }
 
-    (*player).hand[(*player).handSize++] = newCard; // Añade la nueva carta a la mano del jugador
+    (*player).hand[(*player).handSize++] = newCard;
 
-    return newCard; // Devuelve la nueva carta
+    return newCard;
 }
 
 void printCard(Card card) {
@@ -228,7 +232,7 @@ void playGame(Player players[2]) {
         getchar();
 
         if (choice == 0) { // Si el jugador elige robar una carta
-            Card drawnCard = drawCardFromDeck(&players[currentPlayer]); // Roba una carta del mazo
+            Card drawnCard = drawCardFromDeck(&players[currentPlayer], 0); // Roba una carta del mazo // Roba una carta del mazo
         } else if (choice >= 1 && choice <= players[currentPlayer].handSize) { // Si el jugador elige jugar una carta
             Card playedCard = players[currentPlayer].hand[choice - 1]; // Obtiene la carta jugada
             printf("%s juega la carta: ", players[currentPlayer].name);
@@ -258,92 +262,91 @@ void playGame(Player players[2]) {
 }
 
 void playAgainstComputer(Player players[2]) {
-    // Configura el juego para jugar contra la computadora
-    copyString(players[0].name, "Jugador 1"); // Establece el nombre del primer jugador
-    copyString(players[1].name, "Computadora"); // Establece el nombre del segundo jugador (la computadora)
+    copyString(players[0].name, "Jugador 1");
+    copyString(players[1].name, "Computadora");
 
     int i;
-    for (i = 0; i < 2; i++) { // Para cada jugador
-        players[i].handSize = HAND_SIZE; // Establece el tamaño inicial de la mano
-        for (int j = 0; j < HAND_SIZE; j++) { // Para cada carta en la mano
-            players[i].hand[j] = getRandomCard(); // Asigna una carta aleatoria
+    for (i = 0; i < 2; i++) {
+        players[i].handSize = HAND_SIZE;
+        for (int j = 0; j < HAND_SIZE; j++) {
+            players[i].hand[j] = getRandomCard();
         }
     }
 
-    int currentPlayer = 0; // Establece el jugador actual
-    CardPile cardPile; // Crea una pila de cartas
-    cardPile.top = -1; // Inicializa la cima de la pila
-    Card initialCard = drawInitialCard(); // Roba una carta inicial
-    cardPile.cards[++cardPile.top] = initialCard; // Coloca la carta inicial en la cima de la pila
-    Card lastPlayedCard = initialCard; // Establece la última carta jugada como la carta inicial
+    int currentPlayer = 0;
+    CardPile cardPile;
+    cardPile.top = -1;
+    Card initialCard = drawInitialCard();
+    cardPile.cards[++cardPile.top] = initialCard;
+    Card lastPlayedCard = initialCard;
 
-    while (1) { // Comienza el juego
-        if (customStringCompare(players[currentPlayer].name, "Computadora") == 0) { // Si el jugador actual es la computadora
-            int played = 0; // Variable para rastrear si la computadora ha jugado una carta
-            for (i = 0; i < players[currentPlayer].handSize; i++) { // Para cada carta en la mano de la computadora
-                if (isValidMove(lastPlayedCard, players[currentPlayer].hand[i])) { // Si la carta es un movimiento válido
-                    printf("Computadora juega la carta: ");
-                    printCard(players[currentPlayer].hand[i]); // Imprime la carta jugada
+    while (1) {
+        if (customStringCompare(players[currentPlayer].name, "Computadora") == 0) {
+            int played = 0;
+            for (i = 0; i < players[currentPlayer].handSize; i++) {
+                if (isValidMove(lastPlayedCard, players[currentPlayer].hand[i])) {
+                    printf("\nComputadora juega la carta: ");
+                    printCard(players[currentPlayer].hand[i]);
                     printf("\n");
 
-                    cardPile.cards[++cardPile.top] = players[currentPlayer].hand[i]; // Coloca la carta jugada en la cima de la pila
-                    lastPlayedCard = players[currentPlayer].hand[i]; // Actualiza la última carta jugada
+                    cardPile.cards[++cardPile.top] = players[currentPlayer].hand[i];
+                    lastPlayedCard = players[currentPlayer].hand[i];
 
-                    players[currentPlayer].handSize--; // Disminuye el tamaño de la mano de la computadora
+                    players[currentPlayer].handSize--;
                     int j;
-                    for (j = i; j < players[currentPlayer].handSize; j++) { // Elimina la carta jugada de la mano de la computadora
+                    for (j = i; j < players[currentPlayer].handSize; j++) {
                         players[currentPlayer].hand[j] = players[currentPlayer].hand[j + 1];
                     }
 
-                    played = 1; // Indica que la computadora ha jugado una carta
+                    played = 1;
                     break;
                 }
             }
 
-            if (!played) { // Si la computadora no ha jugado una carta
-                printf("Computadora roba una carta.\n"); // Imprime un mensaje indicando que la computadora roba una carta
-                drawCardFromDeck(&players[currentPlayer]); // La computadora roba una carta
+            if (!played) {
+                printf("\nComputadora roba una carta.\n");
+                drawCardFromDeck(&players[currentPlayer], 0);
             }
-        } else { // Si el jugador actual es el jugador humano
-            printMenu(players[currentPlayer], &cardPile, initialCard, lastPlayedCard); // Imprime el menú del juego
+        } else {
+            printMenu(players[currentPlayer], &cardPile, initialCard, lastPlayedCard);
 
             printf("Ingresa el número de la carta para jugar (o 0 para robar una carta): ");
             int choice;
-            scanf("%d", &choice); // Lee la elección del jugador
+            scanf("%d", &choice);
             getchar();
 
-            if (choice == 0) { // Si el jugador elige robar una carta
-                Card drawnCard = drawCardFromDeck(&players[currentPlayer]); // Roba una carta del mazo
-            } else if (choice >= 1 && choice <= players[currentPlayer].handSize) { // Si el jugador elige jugar una carta
-                Card playedCard = players[currentPlayer].hand[choice - 1]; // Obtiene la carta jugada
+            if (choice == 0) {
+                Card drawnCard = drawCardFromDeck(&players[currentPlayer], 1);
+            } else if (choice >= 1 && choice <= players[currentPlayer].handSize) {
+                Card playedCard = players[currentPlayer].hand[choice - 1];
                 printf("%s juega la carta: ", players[currentPlayer].name);
-                printCard(playedCard); // Imprime la carta jugada
+                printCard(playedCard);
                 printf("\n");
 
-                cardPile.cards[++cardPile.top] = playedCard; // Coloca la carta jugada en la cima de la pila
-                lastPlayedCard = playedCard; // Actualiza la última carta jugada
+                cardPile.cards[++cardPile.top] = playedCard;
+                lastPlayedCard = playedCard;
 
-                players[currentPlayer].handSize--; // Disminuye el tamaño de la mano del jugador
+                players[currentPlayer].handSize--;
                 int i;
-                for (i = choice - 1; i < players[currentPlayer].handSize; i++) { // Elimina la carta jugada de la mano del jugador
+                for (i = choice - 1; i < players[currentPlayer].handSize; i++) {
                     players[currentPlayer].hand[i] = players[currentPlayer].hand[i + 1];
                 }
-            } else { // Si el jugador elige una opción inválida
-                printf("¡Elección inválida! Inténtalo de nuevo.\n"); // Imprime un mensaje de error
-                continue; // Continúa con el siguiente turno
+            } else {
+                printf("¡Elección inválida! Inténtalo de nuevo.\n");
+                continue;
             }
         }
 
-        if (players[currentPlayer].handSize == 0) { // Si el jugador actual no tiene más cartas
-            if (customStringCompare(players[currentPlayer].name, "Computadora") == 0) { // Si el jugador actual es la computadora
-                printf("\n¡La computadora gana!\n"); // Anuncia que la computadora ha ganado
-            } else { // Si el jugador actual es el jugador humano
-                printf("¡%s gana!\n", players[currentPlayer].name); // Anuncia que el jugador humano ha ganado
+        if (players[currentPlayer].handSize == 0) {
+            if (customStringCompare(players[currentPlayer].name, "Computadora") == 0) {
+                printf("\n¡La computadora gana!\n");
+            } else {
+                printf("¡%s gana!\n", players[currentPlayer].name);
             }
-            break; // Termina el juego
+            break;
         }
 
-        switchPlayer(&currentPlayer, 2); // Cambia al siguiente jugador
+        switchPlayer(&currentPlayer, 2);
     }
 }
 
