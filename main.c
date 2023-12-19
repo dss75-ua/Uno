@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <string.h>
 
 #define HAND_SIZE 7
 #define MAX_NAME_LENGTH 20
@@ -80,19 +81,18 @@ int isValidMove(Card topCard, Card playedCard) {
 }
 
 Card drawCardFromDeck(Player* player) {
+    if (player->handSize >= MAX_CARDS) {
+        printf("¡La mano está llena! No puedes robar más cartas.\n");
+        return getRandomCard();  // Return a random card without adding it to the hand
+    }
+
     printf("¡Se ha robado una carta adicional: ");
     Card newCard = getRandomCard();
     printCard(newCard);
     printf("!\n");
 
-    // Check if the player's hand is full
-    if (player->handSize >= MAX_CARDS) {
-        printf("¡La mano está llena! No puedes robar más cartas.\n");
-        return newCard;  // Return the drawn card even if the hand is full
-    }
-
     // Add the new card to the player's hand at the correct index
-    (*(player)).hand[(*(player)).handSize++] = newCard;
+    player->hand[player->handSize++] = newCard;
 
     return newCard;  // Return the drawn card
 }
@@ -234,10 +234,92 @@ void playAgainstComputer(Player players[2]) {
         }
     }
 
-    // Start the game
-    playGame(players);
-}
+    Player* currentPlayer = &players[0];
+    CardPile cardPile;
+    cardPile.top = -1;  // Empty pile
+    Card initialCard = drawInitialCard();
+    cardPile.cards[++cardPile.top] = initialCard;
+    Card lastPlayedCard = initialCard;
 
+    while (1) {
+        if (strcmp(currentPlayer->name, "Computadora") == 0) {
+            // Computer's turn
+            int played = 0;
+            for (i = 0; i < currentPlayer->handSize; i++) {
+                if (isValidMove(lastPlayedCard, currentPlayer->hand[i])) {
+                    // Play the card
+                    printf("Computadora juega la carta: ");
+                    printCard(currentPlayer->hand[i]);
+                    printf("\n");
+
+                    // Add the played card to the pile
+                    cardPile.cards[++cardPile.top] = currentPlayer->hand[i];
+                    lastPlayedCard = currentPlayer->hand[i];  // Update the last played card
+
+                    // Remove the played card from the player's hand
+                    currentPlayer->handSize--;
+                    for (int j = i; j < currentPlayer->handSize; j++) {
+                        currentPlayer->hand[j] = currentPlayer->hand[j + 1];
+                    }
+
+                    played = 1;
+                    break;
+                }
+            }
+
+            if (!played) {
+                // Draw a card
+                printf("Computadora roba una carta.\n");
+                drawCardFromDeck(currentPlayer);
+            }
+        } else {
+            // Human player's turn
+            printMenu(*currentPlayer, &cardPile, initialCard, lastPlayedCard);
+
+            printf("Ingresa el número de la carta para jugar (o 0 para robar una carta): ");
+            int choice;
+            scanf("%d", &choice);
+            getchar(); // Consume the newline character
+
+            if (choice == 0) {
+                Card drawnCard = drawCardFromDeck(currentPlayer);
+            } else if (choice >= 1 && choice <= currentPlayer->handSize) {
+                // Play the selected card
+                Card playedCard = currentPlayer->hand[choice - 1];
+                printf("%s juega la carta: ", currentPlayer->name);
+                printCard(playedCard);
+                printf("\n");
+
+                // Add the played card to the pile
+                cardPile.cards[++cardPile.top] = playedCard;
+                lastPlayedCard = playedCard;  // Update the last played card
+
+                // Remove the played card from the player's hand
+                currentPlayer->handSize--;
+                for (int i = choice - 1; i < currentPlayer->handSize; i++) {
+                    currentPlayer->hand[i] = currentPlayer->hand[i + 1];
+                }
+            } else {
+                printf("¡Elección inválida! Inténtalo de nuevo.\n");
+                continue;  // Restart the loop to get a valid input
+            }
+        }
+
+        // Check for the end of the game
+        // Check for the end of the game
+        if (currentPlayer->handSize == 0) {
+            if (strcmp(currentPlayer->name, "Computadora") == 0) {
+                printf("\n¡La computadora gana!\n");
+            } else {
+                printf("¡%s gana!\n", currentPlayer->name);
+            }
+            break;  // Exit the loop when the game ends
+        }
+
+        // After drawing a card or playing a card, switch to the other player
+        switchPlayer(&currentPlayer, players);
+    }
+}
 
 int main() {
     srand(time(NULL));
@@ -259,7 +341,7 @@ int main() {
         switch (choice) {
             case 1:
                 // Call a function to play against the computer
-                // playAgainstComputer(players);
+                playAgainstComputer(players);
                 printf("Función para jugar contra computadora aún no implementada.\n");
                 break;
 
