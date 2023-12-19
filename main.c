@@ -188,7 +188,7 @@ void printMenu(Player currentPlayer, CardPile *cardPile, Card initialCard, Card 
     printf("                   JUEGO DE CARTAS UNO               \n");
     printf("******************************************************\n");
 
-    printf("Carta  en la pila: ");
+    printf("\nCarta en la pila: ");
     printCard(lastPlayedCard); // Imprime la última carta jugada
     printf("\n\n");
 
