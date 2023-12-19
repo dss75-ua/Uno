@@ -21,8 +21,14 @@ typedef struct {
     int handSize;
 } Player;
 
+typedef struct {
+    Card cards[MAX_CARDS];
+    int top;  // Index of the top card in the pile
+} CardPile;
+
 void printCard(Card card);
 void printHand(Player player);
+void printPile(CardPile pile);
 
 Card getRandomCard() {
     Card randomCard;
@@ -38,6 +44,14 @@ void copyString(char dest[], const char src[]) {
         i++;
     }
     dest[i] = '\0';
+}
+
+Card drawInitialCard() {
+    printf("¡Se ha robado una carta adicional: ");
+    Card newCard = getRandomCard();
+    printCard(newCard);
+    printf("!\n");
+    return newCard;  // Return the drawn card
 }
 
 void initializePlayers(Player players[2]) {
@@ -65,7 +79,7 @@ int isValidMove(Card topCard, Card playedCard) {
     return (playedCard.color == topCard.color) || (playedCard.value == topCard.value);
 }
 
-void drawCardFromDeck(Player* player) {
+Card drawCardFromDeck(Player* player) {
     printf("¡Se ha robado una carta adicional: ");
     Card newCard = getRandomCard();
     printCard(newCard);
@@ -74,23 +88,24 @@ void drawCardFromDeck(Player* player) {
     // Check if the player's hand is full
     if (player->handSize >= MAX_CARDS) {
         printf("¡La mano está llena! No puedes robar más cartas.\n");
-        return;
+        return newCard;  // Return the drawn card even if the hand is full
     }
 
     // Add the new card to the player's hand at the correct index
     (*(player)).hand[(*(player)).handSize++] = newCard;
-    printHand(*player);  // Print the updated hand
+
+    return newCard;  // Return the drawn card
 }
 
 void printCard(Card card) {
-    const char* colors[] = {"Rojo", "Verde", "Azul", "Amarillo"};
+    const char* colors[] = {"\033[31mRojo\033[0m", "\033[32mVerde\033[0m", "\033[34mAzul\033[0m", "\033[33mAmarillo\033[0m"};
     const char* values[] = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
 
     printf("%s %s", colors[card.color], values[card.value]);
 }
 
 void printHand(Player player) {
-    printf("Mano de %s:\n", player.name);
+    printf("Mano de %s:\n\n", player.name);
     for (int i = 0; i < player.handSize; i++) {
         printf("[%d] ", i + 1);
         printCard(player.hand[i]);
@@ -98,10 +113,23 @@ void printHand(Player player) {
     }
 }
 
-void printMenu(Player currentPlayer) {
+void printPile(CardPile pile) {
+    printf("Cartas en la pila:\n");
+    for (int i = 0; i <= pile.top; i++) {
+        printf(" - ");
+        printCard(pile.cards[i]);
+        printf("\n");
+    }
+}
+
+void printMenu(Player currentPlayer, CardPile* cardPile, Card initialCard, Card lastPlayedCard) {
     printf("\n******************************************************\n");
     printf("                   JUEGO DE CARTAS UNO               \n");
     printf("******************************************************\n");
+
+    printf("Carta  en la pila: ");
+    printCard(lastPlayedCard);
+    printf("\n\n");
 
     if (currentPlayer.handSize > 0) {
         printHand(currentPlayer);
@@ -139,14 +167,18 @@ void playGame(Player players[2]) {
     srand(time(NULL));
     Player* currentPlayer = &players[0];
 
-    while (1) {
-        printMenu(*currentPlayer);
+    // Initialize the card pile
+    CardPile cardPile;
+    cardPile.top = -1;  // Empty pile
 
-        // Check for the end of the game
-        if (currentPlayer->handSize == 0) {
-            printf("¡%s gana!\n", currentPlayer->name);
-            break;  // Exit the loop when the game ends
-        }
+    // Draw the initial card
+    Card initialCard = drawInitialCard();
+    cardPile.cards[++cardPile.top] = initialCard;
+
+    Card lastPlayedCard = initialCard;  // At the start of the game, the last played card is the initial card
+
+    while (1) {
+        printMenu(*currentPlayer, &cardPile, initialCard, lastPlayedCard);
 
         printf("Ingresa el número de la carta para jugar (o 0 para robar una carta): ");
         int choice;
@@ -154,12 +186,29 @@ void playGame(Player players[2]) {
         getchar(); // Consume the newline character
 
         if (choice == 0) {
-            drawCardFromDeck(currentPlayer);
+            Card drawnCard = drawCardFromDeck(currentPlayer);
+            // Add the drawn card to the player's hand
         } else if (choice >= 1 && choice <= currentPlayer->handSize) {
-            // Play the selected card (no need for playCard function)
+            // Play the selected card
+            Card playedCard = currentPlayer->hand[choice - 1];
+            printf("%s juega la carta: ", currentPlayer->name);
+            printCard(playedCard);
+            printf("\n");
+
+            // Add the played card to the pile
+            cardPile.cards[++cardPile.top] = playedCard;
+            lastPlayedCard = playedCard;  // Update the last played card
+
+            // Remove the played card from the player's hand
             currentPlayer->handSize--;
             for (int i = choice - 1; i < currentPlayer->handSize; i++) {
                 currentPlayer->hand[i] = currentPlayer->hand[i + 1];
+            }
+
+            // Check for the end of the game
+            if (currentPlayer->handSize == 0) {
+                printf("¡%s gana!\n", currentPlayer->name);
+                break;  // Exit the loop when the game ends
             }
         } else {
             printf("¡Elección inválida! Inténtalo de nuevo.\n");
@@ -170,6 +219,25 @@ void playGame(Player players[2]) {
         switchPlayer(&currentPlayer, players);
     }
 }
+
+void playAgainstComputer(Player players[2]) {
+    // Initialize the players
+    copyString(players[0].name, "Jugador 1");
+    copyString(players[1].name, "Computadora");
+
+    // Initialize the hands of both players
+    int i;
+    for (i = 0; i < 2; i++) {
+        players[i].handSize = HAND_SIZE;
+        for (int j = 0; j < HAND_SIZE; j++) {
+            players[i].hand[j] = getRandomCard();
+        }
+    }
+
+    // Start the game
+    playGame(players);
+}
+
 
 int main() {
     srand(time(NULL));
