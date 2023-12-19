@@ -234,35 +234,44 @@ void playGame(Player players[2]) {
     while (1) { // Comienza el juego
         printMenu(players[currentPlayer], &cardPile, initialCard, lastPlayedCard); // Imprime el menú del juego
 
-        printf("Ingresa el número de la carta para jugar (o 0 para robar una carta): ");
-        int choice;
-        scanf("%d", &choice); // Lee la elección del jugador
-        getchar();
+        while (1) {
+            printf("Ingresa el número de la carta para jugar (o 0 para robar una carta): ");
+            int choice;
+            scanf("%d", &choice); // Lee la elección del jugador
+            getchar();
 
-        if (choice == 0) { // Si el jugador elige robar una carta
-            Card drawnCard = drawCardFromDeck(&players[currentPlayer], 0); // Roba una carta del mazo // Roba una carta del mazo
-        } else if (choice >= 1 && choice <= players[currentPlayer].handSize) { // Si el jugador elige jugar una carta
-            Card playedCard = players[currentPlayer].hand[choice - 1]; // Obtiene la carta jugada
-            printf("%s juega la carta: ", players[currentPlayer].name);
-            printCard(playedCard); // Imprime la carta jugada
-            printf("\n");
+            if (choice == 0) { // Si el jugador elige robar una carta
+                Card drawnCard = drawCardFromDeck(&players[currentPlayer], 0); // Roba una carta del mazo
+                break;
+            } else if (choice >= 1 && choice <= players[currentPlayer].handSize) { // Si el jugador elige jugar una carta
+                Card playedCard = players[currentPlayer].hand[choice - 1]; // Obtiene la carta jugada
+                if (isValidMove(lastPlayedCard, playedCard)) {
+                    printf("%s juega la carta: ", players[currentPlayer].name);
+                    printCard(playedCard); // Imprime la carta jugada
+                    printf("\n");
 
-            cardPile.cards[++cardPile.top] = playedCard; // Coloca la carta jugada en la cima de la pila
-            lastPlayedCard = playedCard; // Actualiza la última carta jugada
+                    cardPile.cards[++cardPile.top] = playedCard; // Coloca la carta jugada en la cima de la pila
+                    lastPlayedCard = playedCard; // Actualiza la última carta jugada
 
-            players[currentPlayer].handSize--; // Disminuye el tamaño de la mano del jugador
-            int i;
-            for (i = choice - 1; i < players[currentPlayer].handSize; i++) {
-                players[currentPlayer].hand[i] = players[currentPlayer].hand[i + 1]; // Elimina la carta jugada de la mano del jugador
+                    players[currentPlayer].handSize--; // Disminuye el tamaño de la mano del jugador
+                    int i;
+                    for (i = choice - 1; i < players[currentPlayer].handSize; i++) {
+                        players[currentPlayer].hand[i] = players[currentPlayer].hand[i + 1]; // Elimina la carta jugada de la mano del jugador
+                    }
+
+                    if (players[currentPlayer].handSize == 0) { // Si el jugador no tiene más cartas
+                        printf("¡%s gana!\n", players[currentPlayer].name); // Anuncia que el jugador ha ganado
+                        break; // Termina el juego
+                    }
+                    break;
+                } else {
+                    printf("¡Movimiento inválido! Inténtalo de nuevo.\n"); // Imprime un mensaje de error
+                    continue; // Continúa con el siguiente turno
+                }
+            } else { // Si el jugador elige una opción inválida
+                printf("¡Elección inválida! Inténtalo de nuevo.\n"); // Imprime un mensaje de error
+                continue; // Continúa con el siguiente turno
             }
-
-            if (players[currentPlayer].handSize == 0) { // Si el jugador no tiene más cartas
-                printf("¡%s gana!\n", players[currentPlayer].name); // Anuncia que el jugador ha ganado
-                break; // Termina el juego
-            }
-        } else { // Si el jugador elige una opción inválida
-            printf("¡Elección inválida! Inténtalo de nuevo.\n"); // Imprime un mensaje de error
-            continue; // Continúa con el siguiente turno
         }
 
         switchPlayer(&currentPlayer, 2); // Cambia al siguiente jugador
@@ -333,36 +342,46 @@ void playAgainstComputer(Player players[2]) {
             // Si el jugador actual es el usuario
             printMenu(players[currentPlayer], &cardPile, initialCard, lastPlayedCard);
 
-            // Solicita al usuario que elija una carta para jugar
-            printf("Ingresa el número de la carta para jugar (o 0 para robar una carta): ");
-            int choice;
-            scanf("%d", &choice);
-            getchar();
+            while (1) {
+                // Solicita al usuario que elija una carta para jugar
+                printf("Ingresa el número de la carta para jugar (o 0 para robar una carta): ");
+                int choice;
+                scanf("%d", &choice);
+                getchar();
 
-            // Si el usuario elige robar una carta
-            if (choice == 0) {
-                Card drawnCard = drawCardFromDeck(&players[currentPlayer], 1);
-            } else if (choice >= 1 && choice <= players[currentPlayer].handSize) {
-                // Si el usuario elige jugar una carta
-                Card playedCard = players[currentPlayer].hand[choice - 1];
-                printf("%s juega la carta: ", players[currentPlayer].name);
-                printCard(playedCard);
-                printf("\n");
+                // Si el usuario elige robar una carta
+                if (choice == 0) {
+                    Card drawnCard = drawCardFromDeck(&players[currentPlayer], 1);
+                    break;
+                } else if (choice >= 1 && choice <= players[currentPlayer].handSize) {
+                    // Si el usuario elige jugar una carta
+                    Card playedCard = players[currentPlayer].hand[choice - 1];
+                    if (isValidMove(lastPlayedCard, playedCard)) {
+                        printf("%s juega la carta: ", players[currentPlayer].name);
+                        printCard(playedCard);
+                        printf("\n");
 
-                // Coloca la carta jugada en la pila de cartas
-                cardPile.cards[++cardPile.top] = playedCard;
-                lastPlayedCard = playedCard;
+                        // Coloca la carta jugada en la pila de cartas
+                        cardPile.cards[++cardPile.top] = playedCard;
+                        lastPlayedCard = playedCard;
 
-                // Elimina la carta jugada de la mano del usuario
-                players[currentPlayer].handSize--;
-                int i;
-                for (i = choice - 1; i < players[currentPlayer].handSize; i++) {
-                    players[currentPlayer].hand[i] = players[currentPlayer].hand[i + 1];
+                        // Elimina la carta jugada de la mano del usuario
+                        players[currentPlayer].handSize--;
+                        int i;
+                        for (i = choice - 1; i < players[currentPlayer].handSize; i++) {
+                            players[currentPlayer].hand[i] = players[currentPlayer].hand[i + 1];
+                        }
+                        break;
+                    } else {
+                        // Si el usuario intenta jugar una carta inválida
+                        printf("¡Movimiento inválido! Inténtalo de nuevo.\n");
+                        continue;
+                    }
+                } else {
+                    // Si el usuario elige una opción inválida
+                    printf("¡Elección inválida! Inténtalo de nuevo.\n");
+                    continue;
                 }
-            } else {
-                // Si el usuario elige una opción inválida
-                printf("¡Elección inválida! Inténtalo de nuevo.\n");
-                continue;
             }
         }
 
