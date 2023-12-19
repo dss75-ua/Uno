@@ -183,45 +183,46 @@ void printPile(CardPile pile) {
 }
 
 void printMenu(Player currentPlayer, CardPile *cardPile, Card initialCard, Card lastPlayedCard) {
-    // Imprime el menú del juego
-    printf("\n******************************************************\n");
-    printf("                   JUEGO DE CARTAS UNO               \n");
-    printf("******************************************************\n");
+    printf("\n=========================================================================\n");
+    printf("                             JUEGO DE CARTAS UNO                         \n");
+    printf("=========================================================================\n");
 
-    printf("\nCarta en la pila: ");
-    printCard(lastPlayedCard); // Imprime la última carta jugada
+    printf("\nCarta actual en la pila: ");
+    printCard(lastPlayedCard);
     printf("\n\n");
 
     if (currentPlayer.handSize > 0) {
-        printHand(currentPlayer); // Imprime la mano del jugador actual si tiene cartas
+        printf("Mano del jugador actual: \n");
+        printHand(currentPlayer);
     } else {
-        printf("Mano de %s:\n", currentPlayer.name);
-        printf("(Vacia)\n"); // Imprime que la mano del jugador está vacía si no tiene cartas
+        printf("La mano de juagador %s está actualmente vacía.\n", currentPlayer.name);
     }
 
-    printf("\n******************************************************\n");
+    printf("=========================================================================\n");
     printf("\n");
 }
 
 void endOfGameMenu(int *playAgain) {
-    // Menú de fin de juego
-    printf("\n******************************************************\n");
-    printf("                   JUEGO DE CARTAS UNO               \n");
-    printf("******************************************************\n");
-    printf("\n1. Jugar otra vez\n"); // Opción para jugar otra vez
-    printf("2. Salir\n\n"); // Opción para salir del juego
-    printf("Ingresa el número de tu elección: ");
+    printf("\n=========================================================================\n");
+    printf("                             JUEGO DE CARTAS UNO                         \n");
+    printf("=========================================================================\n");
+    printf("\n1. Jugar nuevamente\n");
+    printf("2. Salir del juego\n\n");
+    printf("Por favor, ingresa el número de tu elección: ");
 
     int choice;
-    scanf("%d", &choice); // Lee la elección del usuario
+    scanf("%d", &choice);
 
-    if (choice == 1) {
-        *playAgain = 1; // Si el usuario elige jugar otra vez, establece playAgain a 1
-    } else if (choice == 2) {
-        *playAgain = 0; // Si el usuario elige salir, establece playAgain a 0
-    } else {
-        printf("Opción inválida. Saliendo del juego.\n"); // Si el usuario elige una opción inválida, sale del juego
-        *playAgain = 0;
+    switch(choice) {
+        case 1:
+            *playAgain = 1;
+            break;
+        case 2:
+            *playAgain = 0;
+            break;
+        default:
+            printf("Opción inválida. Saliendo del juego.\n");
+            *playAgain = 0;
     }
 }
 
@@ -412,9 +413,9 @@ int main() {
     int playAgain = 1; // Variable para controlar si el juego debe continuar
 
     while (playAgain) { // Mientras el jugador quiera seguir jugando
-        printf("\n******************************************************\n");
-        printf("                   JUEGO DE CARTAS UNO               \n");
-        printf("******************************************************\n");
+        printf("\n=========================================================================\n");
+        printf("                             JUEGO DE CARTAS UNO                         \n");
+        printf("=========================================================================\n");
         printf("\n1. Jugar contra computadora\n"); // Opción para jugar contra la computadora
         printf("2. Jugar contra amigo\n"); // Opción para jugar contra un amigo
         printf("3. Salir\n\n"); // Opción para salir del juego
