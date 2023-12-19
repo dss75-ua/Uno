@@ -100,9 +100,15 @@ void switchPlayer(int* currentPlayer, int numPlayers) {
 }
 
 int isValidMove(Card topCard, Card playedCard) {
-    // Comprueba si el movimiento es válido
-    return (playedCard.color == topCard.color) || (playedCard.value == topCard.value);
+    register Color topCardColor = topCard.color;
+    register int topCardValue = topCard.value;
+
+    register Color playedCardColor = playedCard.color;
+    register int playedCardValue = playedCard.value;
+
+    return (playedCardColor == topCardColor) || (playedCardValue == topCardValue);
 }
+
 
 // Función para robar una carta del mazo
 Card drawCardFromDeck(Player* player, int displayCard) {
