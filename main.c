@@ -253,7 +253,7 @@ void playGame(Player players[2]) {
             } else if (choice >= 1 && choice <= players[currentPlayer].handSize) { // Si el jugador elige jugar una carta
                 Card playedCard = players[currentPlayer].hand[choice - 1]; // Obtiene la carta jugada
                 if (isValidMove(lastPlayedCard, playedCard)) {
-                    printf("%s juega la carta: ", players[currentPlayer].name);
+                    printf("%s juega la carta: ", players[currentPlayer].name); // Imprime el nombre del jugador y la carta jugada
                     printCard(playedCard); // Imprime la carta jugada
                     printf("\n");
 
@@ -267,8 +267,8 @@ void playGame(Player players[2]) {
                     }
 
                     if (players[currentPlayer].handSize == 0) { // Si el jugador no tiene más cartas
-                        printf("¡%s gana!\n", players[currentPlayer].name); // Anuncia que el jugador ha ganado
-                        break; // Termina el juego
+                        printf("\n¡%s gana!\n", players[currentPlayer].name); // Anuncia que el jugador ha ganado
+                        return; // Termina el juego inmediatamente
                     }
                     break;
                 } else {
@@ -343,7 +343,10 @@ void playAgainstComputer(Player players[2]) {
             // Si la computadora no pudo jugar una carta, roba una
             if (!played) {
                 printf("\nComputadora roba una carta.\n");
-                drawCardFromDeck(&players[currentPlayer], 0);
+                Card drawnCard = drawCardFromDeck(&players[currentPlayer], 0);
+                if (players[currentPlayer].handSize < MAX_CARDS) {
+                    players[currentPlayer].hand[players[currentPlayer].handSize++] = drawnCard;
+                }
             }
         } else {
             // Si el jugador actual es el usuario
@@ -397,7 +400,7 @@ void playAgainstComputer(Player players[2]) {
             if (customStringCompare(players[currentPlayer].name, "Computadora") == 0) {
                 printf("\n¡La computadora gana!\n");
             } else {
-                printf("¡%s gana!\n", players[currentPlayer].name);
+                printf("\n¡%s gana!\n", players[currentPlayer].name);
             }
             break;
         }
