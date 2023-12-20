@@ -281,6 +281,16 @@ void playGame(Player players[2]) {
             }
         }
 
+        // Check if the deck is empty
+        if (cardPile.top == MAX_CARDS - 1) {
+            // Display the message when the deck is empty
+            printf("\nEl mazo está vacío. ");
+            // Determine the winner based on the player with the fewest cards
+            int winnerIndex = (players[0].handSize < players[1].handSize) ? 0 : 1;
+            printf("¡%s gana por tener menos cartas!\n", players[winnerIndex].name);
+            return; // End the game immediately
+        }
+
         switchPlayer(&currentPlayer, 2); // Cambia al siguiente jugador
     }
 }
@@ -321,7 +331,7 @@ void playAgainstComputer(Player players[2]) {
             for (i = 0; i < players[currentPlayer].handSize; i++) {
                 if (isValidMove(lastPlayedCard, players[currentPlayer].hand[i])) {
                     // Si encuentra una, la juega y la coloca en la pila de cartas
-                    printf("\nComputadora juega la carta: ");
+                    printf("\nLa Computadora juega la carta: ");
                     printCard(players[currentPlayer].hand[i]);
                     printf("\n");
 
@@ -342,14 +352,14 @@ void playAgainstComputer(Player players[2]) {
 
             // Si la computadora no pudo jugar una carta, roba una
             if (!played) {
-                printf("\nComputadora roba una carta.\n");
+                printf("\nLa Computadora roba una carta.\n");
                 Card drawnCard = drawCardFromDeck(&players[currentPlayer], 0);
                 if (players[currentPlayer].handSize < MAX_CARDS) {
                     players[currentPlayer].hand[players[currentPlayer].handSize++] = drawnCard;
                 }
             }
         } else {
-            // Si el jugador actual es el usuario
+            // Imprime el menú del juego para el jugador humano
             printMenu(players[currentPlayer], &cardPile, initialCard, lastPlayedCard);
 
             while (1) {
@@ -395,14 +405,14 @@ void playAgainstComputer(Player players[2]) {
             }
         }
 
-        // Si un jugador se queda sin cartas, gana el juego
-        if (players[currentPlayer].handSize == 0) {
-            if (customStringCompare(players[currentPlayer].name, "Computadora") == 0) {
-                printf("\n¡La computadora gana!\n");
-            } else {
-                printf("\n¡%s gana!\n", players[currentPlayer].name);
-            }
-            break;
+        // Verifica si el mazo está vacío
+        if (cardPile.top == MAX_CARDS - 1) {
+            // Muestra el mensaje cuando el mazo está vacío
+            printf("\nEl mazo está vacío. ");
+            // Determina al ganador según el jugador con la menor cantidad de cartas
+            int winnerIndex = (players[0].handSize < players[1].handSize) ? 0 : 1;
+            printf("¡%s gana por tener menos cartas!\n", players[winnerIndex].name);
+            return; // Finaliza el juego inmediatamente
         }
 
         // Cambia el turno al otro jugador
